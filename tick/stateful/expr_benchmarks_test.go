@@ -201,7 +201,7 @@ func BenchmarkEvalBool_OneOperatorValueChanges_ReferenceNodeFloat64_NumberFloat6
 			IsFloat: true,
 			Float64: float64(10),
 		},
-	})
+	}, stateful.ExecutionContext{})
 	if err != nil {
 		b.Fatalf("Failed to compile the expression: %v", err)
 	}
@@ -322,7 +322,7 @@ func BenchmarkEvalBool_OneOperatorValueChanges_ReferenceNodeInt64_NumberInt64(b 
 			IsInt: true,
 			Int64: int64(10),
 		},
-	})
+	}, stateful.ExecutionContext{})
 	if err != nil {
 		b.Fatalf("Failed to compile the expression: %v", err)
 	}
@@ -362,7 +362,7 @@ func benchmarkEvalBool(b *testing.B, scope *stateful.Scope, node ast.Node) {
 	b.ResetTimer()
 
 	var err error
-	se, err := stateful.NewExpression(node)
+	se, err := stateful.NewExpression(node, stateful.ExecutionContext{})
 	if err != nil {
 		b.Fatalf("Failed to compile the expression: %v", err)
 	}

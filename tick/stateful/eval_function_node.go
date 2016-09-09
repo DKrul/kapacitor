@@ -13,14 +13,14 @@ type EvalFunctionNode struct {
 	argsEvaluators []NodeEvaluator
 }
 
-func NewEvalFunctionNode(funcNode *ast.FunctionNode) (*EvalFunctionNode, error) {
+func NewEvalFunctionNode(funcNode *ast.FunctionNode, executionContext ExecutionContext) (*EvalFunctionNode, error) {
 	evalFuncNode := &EvalFunctionNode{
 		funcName: funcNode.Func,
 	}
 
 	evalFuncNode.argsEvaluators = make([]NodeEvaluator, 0, len(funcNode.Args))
 	for i, argNode := range funcNode.Args {
-		argEvaluator, err := createNodeEvaluator(argNode)
+		argEvaluator, err := createNodeEvaluator(argNode, executionContext)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to handle %v argument: %v", i+1, err)
 		}
@@ -167,7 +167,7 @@ func (n *EvalFunctionNode) EvalBool(scope *Scope, executionState ExecutionState)
 // eval - generic evaluation until we have reflection/introspection capabillities so we can know the type of args
 // and return type, we can remove this entirely
 func eval(n NodeEvaluator, scope *Scope, executionState ExecutionState) (interface{}, error) {
-	retType, err := n.Type(scope, CreateExecutionState())
+	retType, err := n.Type(scope, executionState.CreateFromContext())
 	if err != nil {
 		return nil, err
 	}

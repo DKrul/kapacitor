@@ -12,7 +12,7 @@ import (
 func TestEvalFunctionNode_InvalidNodeAsArgument(t *testing.T) {
 	evaluator, err := stateful.NewEvalFunctionNode(&ast.FunctionNode{
 		Args: []ast.Node{&ast.CommentNode{}},
-	})
+	}, stateful.ExecutionContext{})
 
 	expectedError := errors.New("Failed to handle 1 argument: Given node type is not valid evaluation node: *ast.CommentNode")
 
@@ -33,13 +33,13 @@ func TestEvalFunctionNode_FailedToEvaluateArgumentNodes(t *testing.T) {
 		Args: []ast.Node{
 			&ast.ReferenceNode{Reference: "value"},
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
 	}
 
-	result, err := evaluator.EvalBool(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalBool(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 
 	expectedError := errors.New("Failed to handle 1 argument: name \"value\" is undefined. Names in scope:")
 	if err == nil {
@@ -56,13 +56,13 @@ func TestEvalFunctionNode_UndefinedFunction(t *testing.T) {
 	evaluator, err := stateful.NewEvalFunctionNode(&ast.FunctionNode{
 		Func: "yosi_the_king",
 		Args: []ast.Node{},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
 	}
 
-	result, err := evaluator.EvalBool(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalBool(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 
 	expectedError := errors.New("undefined function: \"yosi_the_king\"")
 	if err == nil {
@@ -79,13 +79,13 @@ func TestEvalFunctionNode_AryMismatch(t *testing.T) {
 	evaluator, err := stateful.NewEvalFunctionNode(&ast.FunctionNode{
 		Func: "sigma",
 		Args: []ast.Node{&ast.BoolNode{Bool: true}},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
 	}
 
-	result, err := evaluator.EvalFloat(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalFloat(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 
 	expectedError := errors.New("error calling \"sigma\": value is not a float")
 	if err == nil {
@@ -102,13 +102,13 @@ func TestEvalFunctionNode_EvalBool_Sanity(t *testing.T) {
 	evaluator, err := stateful.NewEvalFunctionNode(&ast.FunctionNode{
 		Func: "bool",
 		Args: []ast.Node{&ast.StringNode{Literal: "true"}},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
 	}
 
-	result, err := evaluator.EvalBool(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalBool(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Expected a result, but got error - %v", err)
 		return
@@ -123,13 +123,13 @@ func TestEvalFunctionNode_EvalInt64_Sanity(t *testing.T) {
 	evaluator, err := stateful.NewEvalFunctionNode(&ast.FunctionNode{
 		Func: "count",
 		Args: []ast.Node{},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
 	}
 
-	result, err := evaluator.EvalInt(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalInt(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Expected a result, but got error - %v", err)
 		return
@@ -144,13 +144,13 @@ func TestEvalFunctionNode_EvalInt64_KeepConsistentState(t *testing.T) {
 	evaluator, err := stateful.NewEvalFunctionNode(&ast.FunctionNode{
 		Func: "count",
 		Args: []ast.Node{},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
 	}
 
-	executionState := stateful.CreateExecutionState()
+	executionState := (stateful.ExecutionContext{}).Create()
 
 	// first evaluation
 	result, err := evaluator.EvalInt(stateful.NewScope(), executionState)
@@ -179,13 +179,13 @@ func TestEvalFunctionNode_EvalInt64_Reset(t *testing.T) {
 	evaluator, err := stateful.NewEvalFunctionNode(&ast.FunctionNode{
 		Func: "count",
 		Args: []ast.Node{},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
 	}
 
-	executionState := stateful.CreateExecutionState()
+	executionState := (stateful.ExecutionContext{}).Create()
 
 	// first evaluation
 	result, err := evaluator.EvalInt(stateful.NewScope(), executionState)
@@ -224,13 +224,13 @@ func TestEvalFunctionNode_EvalFloat64_Sanity(t *testing.T) {
 				Float64: float64(-1),
 			},
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
 	}
 
-	result, err := evaluator.EvalFloat(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalFloat(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Expected a result, but got error - %v", err)
 		return
@@ -259,7 +259,7 @@ func TestEvalFunctionNode_ComplexNodes(t *testing.T) {
 				Node:     &ast.ReferenceNode{Reference: "y"},
 			},
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to create node evaluator: %v", err)
@@ -269,7 +269,7 @@ func TestEvalFunctionNode_ComplexNodes(t *testing.T) {
 	scope.Set("x", float64(2))
 	scope.Set("y", float64(1))
 
-	result, err := evaluator.EvalFloat(scope, stateful.CreateExecutionState())
+	result, err := evaluator.EvalFloat(scope, (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Expected a result, but got error - %v", err)
 		return

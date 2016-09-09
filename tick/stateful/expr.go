@@ -25,8 +25,9 @@ type Expression interface {
 }
 
 type expression struct {
-	nodeEvaluator  NodeEvaluator
-	executionState ExecutionState
+	nodeEvaluator    NodeEvaluator
+	executionState   ExecutionState
+	executionContext ExecutionContext
 }
 
 // NewExpression accept a node and try to "compile"/ "specialise" it
@@ -35,22 +36,23 @@ type expression struct {
 // For example:
 // 	Given a BinaryNode{ReferNode("value"), NumberNode{Float64:10}} during runtime
 // 	we can find the type of "value" and find the most matching comparison function - (float64,float64) or (int64,float64)
-func NewExpression(node ast.Node) (Expression, error) {
-	nodeEvaluator, err := createNodeEvaluator(node)
+func NewExpression(node ast.Node, executionContext ExecutionContext) (Expression, error) {
+	nodeEvaluator, err := createNodeEvaluator(node, executionContext)
 	if err != nil {
 		return nil, err
 	}
 
 	return &expression{
-		nodeEvaluator:  nodeEvaluator,
-		executionState: CreateExecutionState(),
+		nodeEvaluator:    nodeEvaluator,
+		executionContext: executionContext,
+		executionState:   executionContext.Create(),
 	}, nil
 }
 
 func (se *expression) CopyReset() Expression {
 	return &expression{
 		nodeEvaluator:  se.nodeEvaluator,
-		executionState: CreateExecutionState(),
+		executionState: se.executionContext.Create(),
 	}
 }
 
@@ -79,7 +81,7 @@ func (se *expression) EvalDuration(scope *Scope) (time.Duration, error) {
 }
 
 func (se *expression) Eval(scope *Scope) (interface{}, error) {
-	typ, err := se.nodeEvaluator.Type(scope, CreateExecutionState())
+	typ, err := se.nodeEvaluator.Type(scope, se.executionContext.Create())
 	if err != nil {
 		return nil, err
 	}

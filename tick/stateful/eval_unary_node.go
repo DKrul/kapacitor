@@ -13,12 +13,12 @@ type EvalUnaryNode struct {
 	constReturnType ast.ValueType
 }
 
-func NewEvalUnaryNode(unaryNode *ast.UnaryNode) (*EvalUnaryNode, error) {
+func NewEvalUnaryNode(unaryNode *ast.UnaryNode, executionContext ExecutionContext) (*EvalUnaryNode, error) {
 	if !isValidUnaryOperator(unaryNode.Operator) {
 		return nil, fmt.Errorf("Invalid unary operator: %q", unaryNode.Operator)
 	}
 
-	nodeEvaluator, err := createNodeEvaluator(unaryNode.Node)
+	nodeEvaluator, err := createNodeEvaluator(unaryNode.Node, executionContext)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to handle node: %v", err)
 	}

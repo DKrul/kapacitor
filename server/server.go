@@ -40,6 +40,7 @@ import (
 	"github.com/influxdata/kapacitor/services/telegram"
 	"github.com/influxdata/kapacitor/services/udf"
 	"github.com/influxdata/kapacitor/services/udp"
+	"github.com/influxdata/kapacitor/services/vars"
 	"github.com/influxdata/kapacitor/services/victorops"
 	"github.com/pkg/errors"
 	"github.com/twinj/uuid"
@@ -134,9 +135,6 @@ func New(c *Config, buildInfo BuildInfo, logService logging.Interface) (*Server,
 	s.TaskMasterLookup = kapacitor.NewTaskMasterLookup()
 	s.TaskMaster = kapacitor.NewTaskMaster(kapacitor.MainTaskMaster, logService)
 	s.TaskMasterLookup.Set(s.TaskMaster)
-	if err := s.TaskMaster.Open(); err != nil {
-		return nil, err
-	}
 
 	// Append Kapacitor services.
 	s.appendUDFService()
@@ -161,6 +159,9 @@ func New(c *Config, buildInfo BuildInfo, logService logging.Interface) (*Server,
 	s.appendSlackService()
 	s.appendSensuService()
 	s.appendTalkService()
+	if err := s.appendVarsService(); err != nil {
+		return nil, errors.Wrap(err, "vars service")
+	}
 
 	// Append InfluxDB input services
 	s.appendCollectdService()
@@ -481,11 +482,27 @@ func (s *Server) appendReportingService() {
 	}
 }
 
+func (s *Server) appendVarsService() error {
+	l := s.LogService.NewLogger("[vars] ", log.LstdFlags)
+	srv, err := vars.NewService(s.config.Vars, l)
+	if err != nil {
+		return err
+	}
+	s.TaskMaster.VarsService = srv
+	s.AppendService("vars", srv)
+	return nil
+}
+
 // Err returns an error channel that multiplexes all out of band errors received from all services.
 func (s *Server) Err() <-chan error { return s.err }
 
 // Open opens all the services.
 func (s *Server) Open() error {
+	// Open TaskMaster first
+	if err := s.TaskMaster.Open(); err != nil {
+		return err
+	}
+	// Open each of the services
 	if err := s.startServices(); err != nil {
 		s.Close()
 		return err

@@ -35,7 +35,7 @@ w.every(1s)
 	d := deadman{}
 
 	scope := stateful.NewScope()
-	p, err := CreatePipeline(tickScript, StreamEdge, scope, d, nil)
+	p, err := CreatePipeline(tickScript, StreamEdge, scope, d, nil, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}

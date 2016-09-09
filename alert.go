@@ -323,7 +323,7 @@ func newAlertNode(et *ExecutingTask, n *pipeline.AlertNode, l *log.Logger) (an *
 	an.lrScopePools = make([]stateful.ScopePool, CritAlert+1)
 
 	if n.Info != nil {
-		statefulExpression, expressionCompileError := stateful.NewExpression(n.Info.Expression)
+		statefulExpression, expressionCompileError := stateful.NewExpression(n.Info.Expression, et.tm.TickExecutionContext)
 		if expressionCompileError != nil {
 			return nil, fmt.Errorf("Failed to compile stateful expression for info: %s", expressionCompileError)
 		}
@@ -331,7 +331,7 @@ func newAlertNode(et *ExecutingTask, n *pipeline.AlertNode, l *log.Logger) (an *
 		an.levels[InfoAlert] = statefulExpression
 		an.scopePools[InfoAlert] = stateful.NewScopePool(stateful.FindReferenceVariables(n.Info.Expression))
 		if n.InfoReset != nil {
-			lstatefulExpression, lexpressionCompileError := stateful.NewExpression(n.InfoReset.Expression)
+			lstatefulExpression, lexpressionCompileError := stateful.NewExpression(n.InfoReset.Expression, et.tm.TickExecutionContext)
 			if lexpressionCompileError != nil {
 				return nil, fmt.Errorf("Failed to compile stateful expression for infoReset: %s", lexpressionCompileError)
 			}
@@ -341,14 +341,14 @@ func newAlertNode(et *ExecutingTask, n *pipeline.AlertNode, l *log.Logger) (an *
 	}
 
 	if n.Warn != nil {
-		statefulExpression, expressionCompileError := stateful.NewExpression(n.Warn.Expression)
+		statefulExpression, expressionCompileError := stateful.NewExpression(n.Warn.Expression, et.tm.TickExecutionContext)
 		if expressionCompileError != nil {
 			return nil, fmt.Errorf("Failed to compile stateful expression for warn: %s", expressionCompileError)
 		}
 		an.levels[WarnAlert] = statefulExpression
 		an.scopePools[WarnAlert] = stateful.NewScopePool(stateful.FindReferenceVariables(n.Warn.Expression))
 		if n.WarnReset != nil {
-			lstatefulExpression, lexpressionCompileError := stateful.NewExpression(n.WarnReset.Expression)
+			lstatefulExpression, lexpressionCompileError := stateful.NewExpression(n.WarnReset.Expression, et.tm.TickExecutionContext)
 			if lexpressionCompileError != nil {
 				return nil, fmt.Errorf("Failed to compile stateful expression for warnReset: %s", lexpressionCompileError)
 			}
@@ -358,14 +358,14 @@ func newAlertNode(et *ExecutingTask, n *pipeline.AlertNode, l *log.Logger) (an *
 	}
 
 	if n.Crit != nil {
-		statefulExpression, expressionCompileError := stateful.NewExpression(n.Crit.Expression)
+		statefulExpression, expressionCompileError := stateful.NewExpression(n.Crit.Expression, et.tm.TickExecutionContext)
 		if expressionCompileError != nil {
 			return nil, fmt.Errorf("Failed to compile stateful expression for crit: %s", expressionCompileError)
 		}
 		an.levels[CritAlert] = statefulExpression
 		an.scopePools[CritAlert] = stateful.NewScopePool(stateful.FindReferenceVariables(n.Crit.Expression))
 		if n.CritReset != nil {
-			lstatefulExpression, lexpressionCompileError := stateful.NewExpression(n.CritReset.Expression)
+			lstatefulExpression, lexpressionCompileError := stateful.NewExpression(n.CritReset.Expression, et.tm.TickExecutionContext)
 			if lexpressionCompileError != nil {
 				return nil, fmt.Errorf("Failed to compile stateful expression for critReset: %s", lexpressionCompileError)
 			}

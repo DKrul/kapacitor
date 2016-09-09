@@ -17,13 +17,13 @@ func TestEvalLambdaNode_EvalBool_Sanity(t *testing.T) {
 				Bool: false,
 			},
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile lambda node: %v", err)
 	}
 
-	result, err := evaluator.EvalBool(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalBool(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -42,13 +42,13 @@ func TestEvalLambdaNode_EvalFloat64_Sanity(t *testing.T) {
 				Float64: float64(12),
 			},
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile lambda node: %v", err)
 	}
 
-	result, err := evaluator.EvalFloat(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalFloat(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -67,13 +67,13 @@ func TestEvalLambdaNode_EvalInt64_Sanity(t *testing.T) {
 				Int64: int64(12),
 			},
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile lambda node: %v", err)
 	}
 
-	result, err := evaluator.EvalInt(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalInt(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -91,13 +91,13 @@ func TestEvalLambdaNode_EvalDuration_Sanity(t *testing.T) {
 				Dur: time.Minute,
 			},
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile lambda node: %v", err)
 	}
 
-	result, err := evaluator.EvalDuration(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalDuration(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -112,13 +112,13 @@ func TestEvalLambdaNode_EvalString_Sanity(t *testing.T) {
 		Expression: &ast.StringNode{
 			Literal: "string",
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile lambda node: %v", err)
 	}
 
-	result, err := evaluator.EvalString(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalString(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -133,13 +133,13 @@ func TestEvalLambdaNode_EvalRegex_Sanity(t *testing.T) {
 		Expression: &ast.RegexNode{
 			Regex: regexp.MustCompile("^abc.*"),
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile lambda node: %v", err)
 	}
 
-	result, err := evaluator.EvalRegex(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalRegex(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -185,7 +185,7 @@ func TestEvalLambdaNode_EvalBool_SeparateState(t *testing.T) {
 		Operator: ast.TokenAnd,
 		Left:     l1,
 		Right:    l2,
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile lambda node: %v", err)
@@ -193,7 +193,7 @@ func TestEvalLambdaNode_EvalBool_SeparateState(t *testing.T) {
 
 	count := 15
 	for i := 0; i < count; i++ {
-		result, err := evaluator.EvalBool(stateful.NewScope(), stateful.CreateExecutionState())
+		result, err := evaluator.EvalBool(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 		if err != nil {
 			t.Fatalf("Got unexpected error: %v", err)
 		}
@@ -203,7 +203,7 @@ func TestEvalLambdaNode_EvalBool_SeparateState(t *testing.T) {
 		}
 	}
 	// Final time it should be true
-	result, err := evaluator.EvalBool(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalBool(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Fatalf("Got unexpected error: %v", err)
 	}

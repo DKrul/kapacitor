@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -23,10 +24,9 @@ type Func interface {
 // Lookup for functions
 type Funcs map[string]Func
 
-var statelessFuncs Funcs
+var statelessFuncs = make(Funcs)
 
 func init() {
-	statelessFuncs = make(Funcs)
 	// Conversion functions
 	statelessFuncs["bool"] = &boolean{}
 	statelessFuncs["int"] = &integer{}
@@ -94,7 +94,7 @@ func init() {
 }
 
 // Return set of built-in Funcs
-func NewFunctions() Funcs {
+func NewFunctions(fc *FunctionContext) Funcs {
 	funcs := make(Funcs, len(statelessFuncs)+3)
 	for n, f := range statelessFuncs {
 		funcs[n] = f
@@ -105,7 +105,36 @@ func NewFunctions() Funcs {
 	funcs["count"] = &count{}
 	funcs["spread"] = &spread{min: math.Inf(+1), max: math.Inf(-1)}
 
+	if fc != nil {
+		for n, f := range fc.funcs {
+			funcs[n] = f()
+		}
+	}
+
 	return funcs
+}
+
+var validFunctionName = regexp.MustCompile(`[a-z][\w]*`)
+
+type FunctionContext struct {
+	funcs map[string]func() Func
+}
+
+func NewFunctionContext() *FunctionContext {
+	return &FunctionContext{
+		funcs: make(map[string]func() Func),
+	}
+}
+
+func (c *FunctionContext) Register(name string, f func() Func) error {
+	if !validFunctionName.MatchString(name) {
+		return fmt.Errorf("invalid function name %q", name)
+	}
+	if _, exists := c.funcs[name]; exists {
+		return fmt.Errorf("function with name %q, already exists", name)
+	}
+	c.funcs[name] = f
+	return nil
 }
 
 type math1Func func(float64) float64

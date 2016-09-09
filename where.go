@@ -43,7 +43,7 @@ func (w *WhereNode) runWhere(snapshot []byte) error {
 			scopePool := w.scopePools[p.Group]
 
 			if expr == nil {
-				compiledExpr, err := stateful.NewExpression(w.w.Lambda.Expression)
+				compiledExpr, err := stateful.NewExpression(w.w.Lambda.Expression, w.et.tm.TickExecutionContext)
 				if err != nil {
 					return fmt.Errorf("Failed to compile expression in where clause: %v", err)
 				}
@@ -75,7 +75,7 @@ func (w *WhereNode) runWhere(snapshot []byte) error {
 			scopePool := w.scopePools[b.Group]
 
 			if expr == nil {
-				compiledExpr, err := stateful.NewExpression(w.w.Lambda.Expression)
+				compiledExpr, err := stateful.NewExpression(w.w.Lambda.Expression, w.et.tm.TickExecutionContext)
 				if err != nil {
 					return fmt.Errorf("Failed to compile expression in where clause: %v", err)
 				}

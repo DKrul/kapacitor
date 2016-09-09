@@ -77,23 +77,26 @@ type EvalBinaryNode struct {
 	// Constant return type
 	// If InvalidType then this node is dynamic.
 	constReturnType ast.ValueType
+
+	executionContext ExecutionContext
 }
 
-func NewEvalBinaryNode(node *ast.BinaryNode) (*EvalBinaryNode, error) {
+func NewEvalBinaryNode(node *ast.BinaryNode, executionContext ExecutionContext) (*EvalBinaryNode, error) {
 	if !ast.IsExprOperator(node.Operator) {
 		return nil, fmt.Errorf("unknown binary operator %v", node.Operator)
 	}
 	b := &EvalBinaryNode{
-		operator:        node.Operator,
-		constReturnType: getConstantNodeType(node),
+		operator:         node.Operator,
+		constReturnType:  getConstantNodeType(node),
+		executionContext: executionContext,
 	}
 
-	leftSideEvaluator, err := createNodeEvaluator(node.Left)
+	leftSideEvaluator, err := createNodeEvaluator(node.Left, b.executionContext)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to handle left node: %v", err)
 	}
 
-	rightSideEvaluator, err := createNodeEvaluator(node.Right)
+	rightSideEvaluator, err := createNodeEvaluator(node.Right, b.executionContext)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to handle right node: %v", err)
 	}
@@ -280,7 +283,7 @@ func (e *EvalBinaryNode) evaluateDynamicNode(scope *Scope, executionState Execut
 	// For example: "count() == 1"
 	//  1. we evaluate the left side and counter is 1 (upper ^ in this function)
 	//  2. we evaluate the second time in "EvalBool"
-	typeExecutionState := CreateExecutionState()
+	typeExecutionState := executionState.CreateFromContext()
 
 	if leftType, err = left.Type(scope, typeExecutionState); err != nil {
 		return emptyResultContainer, &ErrSide{error: err, IsLeft: true}
@@ -301,7 +304,7 @@ func (e *EvalBinaryNode) evaluateDynamicNode(scope *Scope, executionState Execut
 // Return an understandable error which is most specific to the issue.
 func (e *EvalBinaryNode) determineError(scope *Scope, executionState ExecutionState) error {
 	if scope != nil {
-		typeExecutionState := CreateExecutionState()
+		typeExecutionState := executionState.CreateFromContext()
 		leftType, err := e.leftEvaluator.Type(scope, typeExecutionState)
 		if err != nil {
 			return fmt.Errorf("can't get the type of the left node: %s", err)

@@ -61,7 +61,7 @@ func newFromNode(et *ExecutingTask, n *pipeline.FromNode, l *log.Logger) (*FromN
 	sn.allDimensions, sn.dimensions = determineDimensions(n.Dimensions)
 
 	if n.Lambda != nil {
-		expr, err := stateful.NewExpression(n.Lambda.Expression)
+		expr, err := stateful.NewExpression(n.Lambda.Expression, et.tm.TickExecutionContext)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to compile from expression: %v", err)
 		}

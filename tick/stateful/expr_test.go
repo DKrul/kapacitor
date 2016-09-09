@@ -292,7 +292,7 @@ func TestExpression_EvalDuration(t *testing.T) {
 func TestExpression_Eval_NotSupportedNode(t *testing.T) {
 	// Passing IdentifierNode, yeah.. this crazy test, but we want to make sure
 	// we don't have panics or crashes
-	se, err := stateful.NewExpression(&ast.IdentifierNode{})
+	se, err := stateful.NewExpression(&ast.IdentifierNode{}, stateful.ExecutionContext{})
 	expectedError := errors.New("Given node type is not valid evaluation node: *ast.IdentifierNode")
 	if err == nil {
 		t.Errorf("EvalBool: Expected error, but got expression: %v", se)
@@ -307,7 +307,7 @@ func TestExpression_Eval_NotSupportedNode(t *testing.T) {
 		Operator: ast.TokenEqual,
 		Left:     &ast.IdentifierNode{},
 		Right:    &ast.BoolNode{Bool: true},
-	})
+	}, stateful.ExecutionContext{})
 
 	expectedError = errors.New("Failed to handle left node: Given node type is not valid evaluation node: *ast.IdentifierNode")
 	if err == nil {
@@ -323,7 +323,7 @@ func TestExpression_Eval_NotSupportedNode(t *testing.T) {
 		Operator: ast.TokenEqual,
 		Left:     &ast.BoolNode{Bool: true},
 		Right:    &ast.IdentifierNode{},
-	})
+	}, stateful.ExecutionContext{})
 
 	expectedError = errors.New("Failed to handle right node: Given node type is not valid evaluation node: *ast.IdentifierNode")
 	if err == nil {
@@ -779,7 +779,7 @@ func TestExpression_EvalBool_UnknownOperator(t *testing.T) {
 		},
 	}
 	expectedError := "unknown binary operator 666"
-	_, err := stateful.NewExpression(node)
+	_, err := stateful.NewExpression(node, stateful.ExecutionContext{})
 	if err == nil {
 		t.Fatal("Unexpected error result: but didn't got any error")
 	}
@@ -986,7 +986,7 @@ func TestExpression_EvalString_StringConcat(t *testing.T) {
 		Right: &ast.StringNode{
 			Literal: "right",
 		},
-	})
+	}, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1009,7 +1009,7 @@ func TestExpression_EvalString_StringConcatReferenceNode(t *testing.T) {
 		Right: &ast.ReferenceNode{
 			Reference: "value",
 		},
-	})
+	}, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1454,7 +1454,7 @@ func runCompiledNumericTests(
 	errorExpectations map[keyStruct]error) {
 
 	runCompiledEvalTests(t, func(t *testing.T, scope *stateful.Scope, n ast.Node) (interface{}, error) {
-		se, err := stateful.NewExpression(n)
+		se, err := stateful.NewExpression(n, stateful.ExecutionContext{})
 		if err != nil {
 			return nil, err
 		}
@@ -1475,7 +1475,7 @@ func runCompiledEvalBoolTests(
 }
 
 func evalCompiledBoolWithScope(t *testing.T, scope *stateful.Scope, n ast.Node) (interface{}, error) {
-	se, err := stateful.NewExpression(n)
+	se, err := stateful.NewExpression(n, stateful.ExecutionContext{})
 	if err != nil {
 		return nil, err
 	}
@@ -1554,7 +1554,7 @@ func runCompiledEvalTests(
 }
 
 func mustCompileExpression(node ast.Node) stateful.Expression {
-	se, err := stateful.NewExpression(node)
+	se, err := stateful.NewExpression(node, stateful.ExecutionContext{})
 	if err != nil {
 		panic(fmt.Sprintf("Failed to compile expression: %v", err))
 	}

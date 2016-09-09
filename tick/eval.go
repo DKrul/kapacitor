@@ -64,7 +64,7 @@ type PartialDescriber interface {
 // Parse and evaluate a given script for the scope.
 // Returns a set of default vars.
 // If a set of predefined vars is provided, they may effect the default var values.
-func Evaluate(script string, scope *stateful.Scope, predefinedVars map[string]Var, ignoreMissingVars bool) (_ map[string]Var, err error) {
+func Evaluate(script string, scope *stateful.Scope, predefinedVars map[string]Var, ignoreMissingVars bool, executionContext stateful.ExecutionContext) (_ map[string]Var, err error) {
 	defer func(errP *error) {
 		r := recover()
 		if r == ErrEmptyStack {
@@ -86,7 +86,7 @@ func Evaluate(script string, scope *stateful.Scope, predefinedVars map[string]Va
 	stck := &stack{}
 	// Collect any defined defaultVars
 	defaultVars := make(map[string]Var)
-	err = eval(root, scope, stck, predefinedVars, defaultVars, ignoreMissingVars)
+	err = eval(root, scope, stck, predefinedVars, defaultVars, ignoreMissingVars, executionContext)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,15 @@ func wrapError(p ast.Position, err error) error {
 }
 
 // Evaluate a node using a stack machine in a given scope
-func eval(n ast.Node, scope *stateful.Scope, stck *stack, predefinedVars, defaultVars map[string]Var, ignoreMissingVars bool) (err error) {
+func eval(
+	n ast.Node,
+	scope *stateful.Scope,
+	stck *stack,
+	predefinedVars,
+	defaultVars map[string]Var,
+	ignoreMissingVars bool,
+	executionContext stateful.ExecutionContext,
+) (err error) {
 	switch node := n.(type) {
 	case *ast.BoolNode:
 		stck.Push(node.Bool)
@@ -123,7 +131,7 @@ func eval(n ast.Node, scope *stateful.Scope, stck *stack, predefinedVars, defaul
 	case *ast.RegexNode:
 		stck.Push(node.Regex)
 	case *ast.UnaryNode:
-		err = eval(node.Node, scope, stck, predefinedVars, defaultVars, ignoreMissingVars)
+		err = eval(node.Node, scope, stck, predefinedVars, defaultVars, ignoreMissingVars, executionContext)
 		if err != nil {
 			return
 		}
@@ -137,7 +145,7 @@ func eval(n ast.Node, scope *stateful.Scope, stck *stack, predefinedVars, defaul
 		if err != nil {
 			return err
 		}
-		expr, err := stateful.NewExpression(n)
+		expr, err := stateful.NewExpression(n, executionContext)
 		if err != nil {
 			return err
 		}
@@ -155,7 +163,7 @@ func eval(n ast.Node, scope *stateful.Scope, stck *stack, predefinedVars, defaul
 	case *ast.ListNode:
 		nodes := make([]interface{}, len(node.Nodes))
 		for i, n := range node.Nodes {
-			err = eval(n, scope, stck, predefinedVars, defaultVars, ignoreMissingVars)
+			err = eval(n, scope, stck, predefinedVars, defaultVars, ignoreMissingVars, executionContext)
 			if err != nil {
 				return
 			}
@@ -178,7 +186,7 @@ func eval(n ast.Node, scope *stateful.Scope, stck *stack, predefinedVars, defaul
 			return
 		}
 	case *ast.DeclarationNode:
-		err = eval(node.Right, scope, stck, predefinedVars, defaultVars, ignoreMissingVars)
+		err = eval(node.Right, scope, stck, predefinedVars, defaultVars, ignoreMissingVars, executionContext)
 		if err != nil {
 			return
 		}
@@ -187,11 +195,11 @@ func eval(n ast.Node, scope *stateful.Scope, stck *stack, predefinedVars, defaul
 			return
 		}
 	case *ast.ChainNode:
-		err = eval(node.Left, scope, stck, predefinedVars, defaultVars, ignoreMissingVars)
+		err = eval(node.Left, scope, stck, predefinedVars, defaultVars, ignoreMissingVars, executionContext)
 		if err != nil {
 			return
 		}
-		err = eval(node.Right, scope, stck, predefinedVars, defaultVars, ignoreMissingVars)
+		err = eval(node.Right, scope, stck, predefinedVars, defaultVars, ignoreMissingVars, executionContext)
 		if err != nil {
 			return
 		}
@@ -202,7 +210,7 @@ func eval(n ast.Node, scope *stateful.Scope, stck *stack, predefinedVars, defaul
 	case *ast.FunctionNode:
 		args := make([]interface{}, len(node.Args))
 		for i, arg := range node.Args {
-			err = eval(arg, scope, stck, predefinedVars, defaultVars, ignoreMissingVars)
+			err = eval(arg, scope, stck, predefinedVars, defaultVars, ignoreMissingVars, executionContext)
 			if err != nil {
 				return
 			}
@@ -230,7 +238,7 @@ func eval(n ast.Node, scope *stateful.Scope, stck *stack, predefinedVars, defaul
 		}
 	case *ast.ProgramNode:
 		for _, n := range node.Nodes {
-			err = eval(n, scope, stck, predefinedVars, defaultVars, ignoreMissingVars)
+			err = eval(n, scope, stck, predefinedVars, defaultVars, ignoreMissingVars, executionContext)
 			if err != nil {
 				return
 			}

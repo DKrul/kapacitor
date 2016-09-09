@@ -41,7 +41,7 @@ type NodeEvaluator interface {
 	IsDynamic() bool
 }
 
-func createNodeEvaluator(n ast.Node) (NodeEvaluator, error) {
+func createNodeEvaluator(n ast.Node, executionContext ExecutionContext) (NodeEvaluator, error) {
 	switch node := n.(type) {
 
 	case *ast.BoolNode:
@@ -69,19 +69,19 @@ func createNodeEvaluator(n ast.Node) (NodeEvaluator, error) {
 		return &EvalRegexNode{Node: node}, nil
 
 	case *ast.BinaryNode:
-		return NewEvalBinaryNode(node)
+		return NewEvalBinaryNode(node, executionContext)
 
 	case *ast.ReferenceNode:
 		return &EvalReferenceNode{Node: node}, nil
 
 	case *ast.FunctionNode:
-		return NewEvalFunctionNode(node)
+		return NewEvalFunctionNode(node, executionContext)
 
 	case *ast.UnaryNode:
-		return NewEvalUnaryNode(node)
+		return NewEvalUnaryNode(node, executionContext)
 
 	case *ast.LambdaNode:
-		return NewEvalLambdaNode(node)
+		return NewEvalLambdaNode(node, executionContext)
 	}
 
 	return nil, fmt.Errorf("Given node type is not valid evaluation node: %T", n)

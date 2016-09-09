@@ -14,8 +14,8 @@ type EvalLambdaNode struct {
 	state           ExecutionState
 }
 
-func NewEvalLambdaNode(lambda *ast.LambdaNode) (*EvalLambdaNode, error) {
-	nodeEvaluator, err := createNodeEvaluator(lambda.Expression)
+func NewEvalLambdaNode(lambda *ast.LambdaNode, executionContext ExecutionContext) (*EvalLambdaNode, error) {
+	nodeEvaluator, err := createNodeEvaluator(lambda.Expression, executionContext)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to handle node: %v", err)
 	}
@@ -24,7 +24,7 @@ func NewEvalLambdaNode(lambda *ast.LambdaNode) (*EvalLambdaNode, error) {
 		nodeEvaluator:   nodeEvaluator,
 		constReturnType: getConstantNodeType(lambda.Expression),
 		// Create an independent state for this expression
-		state: CreateExecutionState(),
+		state: executionContext.Create(),
 	}, nil
 }
 

@@ -99,7 +99,7 @@ s2|structC()
 	}
 	scope.Set("influxql", i)
 
-	_, err := tick.Evaluate(script, scope, nil, false)
+	_, err := tick.Evaluate(script, scope, nil, false, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,7 +156,7 @@ func TestEvaluate_DynamicMethod(t *testing.T) {
 	}
 	scope.SetDynamicMethod("dynamicMethod", dm)
 
-	_, err := tick.Evaluate(script, scope, nil, false)
+	_, err := tick.Evaluate(script, scope, nil, false, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,7 +201,7 @@ var a string
 `
 
 	scope := stateful.NewScope()
-	vars, err := tick.Evaluate(script, scope, nil, true)
+	vars, err := tick.Evaluate(script, scope, nil, true, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -431,7 +431,7 @@ var lambdaZero lambda
 	}
 
 	scope := stateful.NewScope()
-	_, err := tick.Evaluate(script, scope, definedVars, false)
+	_, err := tick.Evaluate(script, scope, definedVars, false, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -479,7 +479,7 @@ var x = 3m
 	}
 
 	scope := stateful.NewScope()
-	_, err := tick.Evaluate(script, scope, definedVars, false)
+	_, err := tick.Evaluate(script, scope, definedVars, false, stateful.ExecutionContext{})
 	if err == nil {
 		t.Fatal("expected error for invalid var type")
 	}
@@ -489,11 +489,11 @@ func TestEvaluate_Vars_ErrorMissingValue(t *testing.T) {
 var x duration
 `
 	scope := stateful.NewScope()
-	if _, err := tick.Evaluate(script, scope, nil, false); err == nil {
+	if _, err := tick.Evaluate(script, scope, nil, false, stateful.ExecutionContext{}); err == nil {
 		t.Fatal("expected error for missing var type")
 	}
 
-	if _, err := tick.Evaluate(script, scope, nil, true); err != nil {
+	if _, err := tick.Evaluate(script, scope, nil, true, stateful.ExecutionContext{}); err != nil {
 		t.Fatal("uexpected error missing var should be ignored")
 	}
 }
@@ -589,7 +589,7 @@ var lambdaCopy = lambda
 `
 
 	scope := stateful.NewScope()
-	vars, err := tick.Evaluate(script, scope, nil, true)
+	vars, err := tick.Evaluate(script, scope, nil, true, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -717,7 +717,7 @@ var x = 2m
 `
 
 	scope := stateful.NewScope()
-	_, err := tick.Evaluate(script, scope, nil, false)
+	_, err := tick.Evaluate(script, scope, nil, false, stateful.ExecutionContext{})
 	if exp, got := "attempted to redefine x, vars are immutable", err.Error(); exp != got {
 		t.Errorf("unexpected error message: got %s exp %s", got, exp)
 	}
@@ -752,7 +752,7 @@ var messageBool = '{{ .ID }} is: ' + string(z)
 `
 
 	scope := stateful.NewScope()
-	vars, err := tick.Evaluate(script, scope, nil, true)
+	vars, err := tick.Evaluate(script, scope, nil, true, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -795,7 +795,7 @@ var s2 = a.structB()
 	a := &structA{}
 	scope.Set("a", a)
 
-	_, err := tick.Evaluate(script, scope, nil, false)
+	_, err := tick.Evaluate(script, scope, nil, false, stateful.ExecutionContext{})
 	if err == nil {
 		t.Fatal("expected error from Evaluate")
 	}
@@ -820,7 +820,7 @@ f(strList)
 	scope := stateful.NewScope()
 	scope.Set("f", f)
 
-	_, err := tick.Evaluate(script, scope, nil, false)
+	_, err := tick.Evaluate(script, scope, nil, false, stateful.ExecutionContext{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -840,7 +840,7 @@ f("asdf")
 	scope := stateful.NewScope()
 	scope.Set("f", f)
 
-	_, err := tick.Evaluate(script, scope, nil, false)
+	_, err := tick.Evaluate(script, scope, nil, false, stateful.ExecutionContext{})
 	if err == nil {
 		t.Fatal("expected error from invalid string call")
 	} else if got, exp := err.Error(), "line 2 char 1: cannot assign *ast.ReferenceNode to type string, did you use double quotes instead of single quotes?"; got != exp {
@@ -862,7 +862,7 @@ f('asdf' + string(10) + 'qwerty')
 	scope := stateful.NewScope()
 	scope.Set("f", f)
 
-	if _, err := tick.Evaluate(script, scope, nil, false); err != nil {
+	if _, err := tick.Evaluate(script, scope, nil, false, stateful.ExecutionContext{}); err != nil {
 		t.Fatal(err)
 	}
 }

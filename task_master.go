@@ -114,6 +114,11 @@ type TaskMaster struct {
 	TimingService interface {
 		NewTimer(timer.Setter) timer.Timer
 	}
+	VarsService interface {
+		FunctionContext() *stateful.FunctionContext
+	}
+	TickExecutionContext stateful.ExecutionContext
+
 	LogService LogService
 
 	// Incoming streams
@@ -187,6 +192,8 @@ func (tm *TaskMaster) New(id string) *TaskMaster {
 	n.TalkService = tm.TalkService
 	n.TimingService = tm.TimingService
 	n.TelegramService = tm.TelegramService
+	n.VarsService = tm.VarsService
+	n.TickExecutionContext = tm.TickExecutionContext
 	return n
 }
 
@@ -203,6 +210,11 @@ func (tm *TaskMaster) Open() (err error) {
 		tm.closed = true
 		return
 	}
+
+	if tm.VarsService == nil {
+		return errors.New("missing VarsService")
+	}
+	tm.TickExecutionContext = stateful.NewExecutionContext(tm.VarsService.FunctionContext())
 	tm.logger.Println("I! opened")
 	return
 }
@@ -260,7 +272,7 @@ func (tm *TaskMaster) NewTemplate(
 		srcEdge = pipeline.BatchEdge
 	}
 
-	tp, err := pipeline.CreateTemplatePipeline(script, srcEdge, scope, tm.DeadmanService)
+	tp, err := pipeline.CreateTemplatePipeline(script, srcEdge, scope, tm.DeadmanService, tm.TickExecutionContext)
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +305,7 @@ func (tm *TaskMaster) NewTask(
 		srcEdge = pipeline.BatchEdge
 	}
 
-	p, err := pipeline.CreatePipeline(script, srcEdge, scope, tm.DeadmanService, vars)
+	p, err := pipeline.CreatePipeline(script, srcEdge, scope, tm.DeadmanService, vars, tm.TickExecutionContext)
 	if err != nil {
 		return nil, err
 	}

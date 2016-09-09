@@ -25,8 +25,9 @@ func CreateTemplatePipeline(
 	sourceEdge EdgeType,
 	scope *stateful.Scope,
 	deadman DeadmanService,
+	executionContext stateful.ExecutionContext,
 ) (*TemplatePipeline, error) {
-	p, vars, err := createPipelineAndVars(script, sourceEdge, scope, deadman, nil, true)
+	p, vars, err := createPipelineAndVars(script, sourceEdge, scope, deadman, nil, true, executionContext)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +46,9 @@ func CreatePipeline(
 	scope *stateful.Scope,
 	deadman DeadmanService,
 	predefinedVars map[string]tick.Var,
+	executionContext stateful.ExecutionContext,
 ) (*Pipeline, error) {
-	p, _, err := createPipelineAndVars(script, sourceEdge, scope, deadman, predefinedVars, false)
+	p, _, err := createPipelineAndVars(script, sourceEdge, scope, deadman, predefinedVars, false, executionContext)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +62,7 @@ func createPipelineAndVars(
 	deadman DeadmanService,
 	predefinedVars map[string]tick.Var,
 	ignoreMissingVars bool,
+	executionContext stateful.ExecutionContext,
 ) (*Pipeline, map[string]tick.Var, error) {
 	p := &Pipeline{
 		deadman: deadman,
@@ -77,7 +80,7 @@ func createPipelineAndVars(
 	}
 	p.addSource(src)
 
-	vars, err := tick.Evaluate(script, scope, predefinedVars, ignoreMissingVars)
+	vars, err := tick.Evaluate(script, scope, predefinedVars, ignoreMissingVars, executionContext)
 	if err != nil {
 		return nil, nil, err
 	}

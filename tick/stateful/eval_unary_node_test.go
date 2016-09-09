@@ -14,7 +14,7 @@ func TestEvalUnaryNode_InvalidOperator(t *testing.T) {
 	evaluator, err := stateful.NewEvalUnaryNode(&ast.UnaryNode{
 		Operator: ast.TokenAnd,
 		Node:     &ast.BoolNode{Bool: true},
-	})
+	}, stateful.ExecutionContext{})
 
 	expectedError := errors.New("Invalid unary operator: \"AND\"")
 
@@ -32,7 +32,7 @@ func TestEvalUnaryNode_InvalidNode(t *testing.T) {
 	evaluator, err := stateful.NewEvalUnaryNode(&ast.UnaryNode{
 		Operator: ast.TokenMinus,
 		Node:     &ast.CommentNode{},
-	})
+	}, stateful.ExecutionContext{})
 
 	expectedError := errors.New("Failed to handle node: Given node type is not valid evaluation node: *ast.CommentNode")
 
@@ -52,13 +52,13 @@ func TestEvalUnaryNode_EvalBool_Sanity(t *testing.T) {
 		Node: &ast.BoolNode{
 			Bool: false,
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile unary node: %v", err)
 	}
 
-	result, err := evaluator.EvalBool(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalBool(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -75,13 +75,13 @@ func TestEvalUnaryNode_EvalFloat64_Sanity(t *testing.T) {
 			IsFloat: true,
 			Float64: float64(12),
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile unary node: %v", err)
 	}
 
-	result, err := evaluator.EvalFloat(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalFloat(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -98,13 +98,13 @@ func TestEvalUnaryNode_EvalInt64_Sanity(t *testing.T) {
 			IsInt: true,
 			Int64: int64(12),
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile unary node: %v", err)
 	}
 
-	result, err := evaluator.EvalInt(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalInt(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -120,13 +120,13 @@ func TestEvalUnaryNode_EvalDuration_Sanity(t *testing.T) {
 		Node: &ast.DurationNode{
 			Dur: 12 * time.Hour,
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile unary node: %v", err)
 	}
 
-	result, err := evaluator.EvalDuration(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalDuration(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 	if err != nil {
 		t.Errorf("Got unexpected error: %v", err)
 	}
@@ -142,13 +142,13 @@ func TestEvalUnaryNode_EvalString_UnexpectedReturnType(t *testing.T) {
 		Node: &ast.BoolNode{
 			Bool: false,
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile unary node: %v", err)
 	}
 
-	result, err := evaluator.EvalString(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalString(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 
 	expectedError := errors.New("TypeGuard: expression returned unexpected type boolean, expected string")
 
@@ -168,13 +168,13 @@ func TestEvalUnaryNode_EvalInt64_FailedToEvaluateNode(t *testing.T) {
 		Node: &ast.BoolNode{
 			Bool: false,
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile unary node: %v", err)
 	}
 
-	result, err := evaluator.EvalInt(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalInt(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 
 	expectedError := errors.New("TypeGuard: expression returned unexpected type boolean, expected int")
 
@@ -194,13 +194,13 @@ func TestEvalUnaryNode_EvalFloat64_FailedToEvaluateNode(t *testing.T) {
 		Node: &ast.ReferenceNode{
 			Reference: "value",
 		},
-	})
+	}, stateful.ExecutionContext{})
 
 	if err != nil {
 		t.Fatalf("Failed to compile unary node: %v", err)
 	}
 
-	result, err := evaluator.EvalFloat(stateful.NewScope(), stateful.CreateExecutionState())
+	result, err := evaluator.EvalFloat(stateful.NewScope(), (stateful.ExecutionContext{}).Create())
 
 	expectedError := errors.New("name \"value\" is undefined. Names in scope:")
 

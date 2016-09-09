@@ -34,7 +34,7 @@ func newCombineNode(et *ExecutingTask, n *pipeline.CombineNode, l *log.Logger) (
 	cn.expressions = make([]stateful.Expression, len(n.Lambdas))
 	cn.scopePools = make([]stateful.ScopePool, len(n.Lambdas))
 	for i, lambda := range n.Lambdas {
-		statefulExpr, err := stateful.NewExpression(lambda.Expression)
+		statefulExpr, err := stateful.NewExpression(lambda.Expression, et.tm.TickExecutionContext)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to compile %v expression: %v", i, err)
 		}

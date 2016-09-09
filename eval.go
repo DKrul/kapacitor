@@ -45,7 +45,7 @@ func newEvalNode(et *ExecutingTask, n *pipeline.EvalNode, l *log.Logger) (*EvalN
 	expressions := make([]ast.Node, len(n.Lambdas))
 	for i, lambda := range n.Lambdas {
 		expressions[i] = lambda.Expression
-		statefulExpr, err := stateful.NewExpression(lambda.Expression)
+		statefulExpr, err := stateful.NewExpression(lambda.Expression, et.tm.TickExecutionContext)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to compile %v expression: %v", i, err)
 		}
